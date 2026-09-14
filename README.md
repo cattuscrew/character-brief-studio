@@ -2,86 +2,85 @@
 
 A simple browser tool for building clear `$imagegen` prompts for game characters and creatures.
 
-The app runs in your browser. It does not use AI or upload your recipes and reference images.
+The app runs in the browser. It does not use AI or upload your recipes and reference images.
 
-## Run it on your computer
+## What you need
 
-### First time only
+- A Windows or macOS computer
+- Node.js 22 or newer
+- A GitHub account
+- GitHub Desktop (recommended)
+- A code editor such as [VS Code](https://code.visualstudio.com/) (recommended)
 
-1. Install [Node.js 22](https://nodejs.org/).
+Install Node.js from [nodejs.org](https://nodejs.org/). Install GitHub Desktop from [desktop.github.com](https://desktop.github.com/).
 
-2. Download the project:
+## First-time setup
 
-```bash
-git clone https://github.com/cattuscrew/character-brief-studio.git
-cd character-brief-studio
-```
+### 1. Get access to the project
 
-3. Install the project files:
+The project is private. The owner must invite you to the GitHub repository before you can download it:
+
+[github.com/cattuscrew/character-brief-studio](https://github.com/cattuscrew/character-brief-studio)
+
+### 2. Download the project
+
+1. Open GitHub Desktop and sign in.
+2. Choose **File → Clone repository**.
+3. Select `cattuscrew/character-brief-studio`.
+4. Choose where to save it, then click **Clone**.
+5. Open the folder in VS Code.
+
+### 3. Install the project (one time)
+
+Open a terminal in the project folder. GitHub Desktop can open one from its **Repository** menu.
+
+Copy and paste:
 
 ```bash
 npm run install:ci
 ```
 
-### Every time you want to use it
+## Start the app
 
-Open Terminal in the project folder and run:
+Whenever you want to use the app:
 
 ```bash
 npm run dev
 ```
 
-Open this address in your browser:
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-[http://localhost:5173](http://localhost:5173)
-
-Keep the terminal open while you use the app. Press `Ctrl+C` in the terminal to stop it.
+Keep the terminal open while using the app. Press `Ctrl+C` to stop it.
 
 ## Make a change
 
-Open the project folder in a code editor such as VS Code.
+1. In GitHub Desktop, click **Fetch origin**, then **Pull origin**.
+2. Open the project in VS Code.
+3. Edit a file and save it.
+4. Check the changes shown in GitHub Desktop.
+5. Write a short summary, click **Commit to main**, then **Push origin**.
+
+Your teammate can then click **Fetch origin** and **Pull origin** to receive the change. GitHub Desktop handles the Git commands for you.
 
 Common files:
 
-- `app/page.tsx` — what the app does and what appears on screen
+- `app/page.tsx` — app behavior and screen content
 - `app/globals.css` — colors, spacing, and layout
 - `lib/brief-studio.ts` — choices and prompt wording
 - `lib/recipe-storage.ts` — saving, loading, and ZIP files
 
-Save your file, then refresh the browser if it does not update automatically.
-
-## Keep your copy up to date
-
-Before you start editing:
-
-```bash
-git pull --rebase github main
-```
-
-After you finish editing:
-
-```bash
-git add .
-git commit -m "Describe what you changed"
-git push github main
-```
-
-Your friend can then update their copy with the same `git pull` command.
-
-If Git says the remote is called `origin`, use `origin` instead of `github`.
-
 ## Important to know
 
-- `localhost` works only on the computer running the app. Your friend should run their own local copy.
+- `localhost` works only on the computer running the app. Your teammate should run their own copy.
 - Recipes and reference images are saved in each browser separately. They are not shared automatically. Use Export and Import in the app to move them.
-- The current hosted version is available at [Character Brief Studio](https://character-brief-studio.outpost-rills6xbiryi.chatgpt.site).
+- If you only want to use the app, open the hosted version: [Character Brief Studio](https://character-brief-studio.outpost-rills6xbiryi.chatgpt.site).
 
 ## If something goes wrong
 
-Check your Node.js version:
+Check the Node.js version:
 
 ```bash
 node --version
 ```
 
-It must be `22.13.0` or newer. If you still need help, copy the error message from Terminal and share it with your teammate.
+It must be `22.13.0` or newer. If it is still older, install Node.js again and reopen GitHub Desktop and your terminal.
