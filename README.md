@@ -1,126 +1,151 @@
-# vinext-starter
+# Character Brief Studio
 
-A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
+Character Brief Studio is a browser-based, field-first prompt builder for game character and creature artwork. It helps a non-artist choose clear options for each part of an `$imagegen` request and produces a readable brief and copy-ready prompt.
 
-## Prerequisites
+The app is deterministic and client-side. It does not call an AI model or an image-generation API.
 
-- Node.js `>=22.13.0`
-- Portable: Windows, macOS, or Linux; no Bash required
-- Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
-- Git is required only for publishing
+## What is stored
 
-## Sites Lifecycle
+- Recipes and reference images are stored locally in the browser using IndexedDB.
+- They are not shared automatically between computers or browsers.
+- Use the app's Export and Import actions to move a recipe and its reference images between devices.
+- Nothing is uploaded by the app unless you explicitly export a ZIP or publish the site.
 
-The Sites initializer copies the shared starter and selects managed-linux only when `SITES_MANAGED_LINUX_CONTAINER=1`; otherwise it selects portable. It saves the selection only in ignored `.sites-runtime/execution-profile.json`. Both profiles copy/configure first, then use the plugin's separate `install-dependencies.mjs` step to measure installation independently. Edit source under `app/` and follow the Sites skill for installation, preview, builds, and publishing.
+## Requirements
 
-Whenever reopening or moving a checkout, run `node <plugin-root>/scripts/configure-execution-profile.mjs` before project commands. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
+- Node.js `22.13.0` or newer
+- npm (included with Node.js)
+- Git, if you are downloading or synchronizing the source from GitHub
 
-This starter does not use `wrangler.jsonc`.
+Check your versions:
 
-`install:ci` runs `npm ci` once against the shared lockfile, disables parent-workspace discovery, and includes required dev/optional dependencies despite production/omit settings. Sharp defaults to prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
-
-- **Portable:** Preserve host HOME, npm cache, registry, proxy, temporary paths, retry/concurrency settings, and lifecycle-script policy. Use `--prefer-offline --no-audit --no-fund`.
-- **Managed Linux:** Use the existing project-local HOME/cache/tmp setup and Linux install lock, tarball preflight, and timeout. Restore the image-seeded npm cache only when its lockfile hash matches; retain network fallback. Builds keep their existing timeout. These helpers are not invoked by the portable profile.
-
-`scripts/sites-env.mjs` preserves the caller's HOME, npm cache, proxy, XDG, and temporary-directory configuration while defaulting Wrangler and Miniflare state to the checkout. If npm reports an unwritable cache, select a writable path with `npm_config_cache` for that install. The `dev` and `start` scripts also keep Wrangler logs inside the checkout. Generated `.sites-runtime/` and `.wrangler/` directories are disposable and ignored by Git.
-
-On portable, `npm run dev` uses `vinext dev` with HMR, starting at port 5173. Vinext records the running server in ignored `.vinext/` state, rejects an ordinary duplicate launch, and recovers stale state after a stopped process; exactly simultaneous starts can race. Pass `--port <port>` or `--hostname <host>` after `npm run dev --` when needed; keep portable previews on loopback.
-
-On managed Linux, use `sites-preview start` only for requested browser QA. The project's dev script runs Vite and accepts the supervisor's `--host 0.0.0.0 --port 4173 --strictPort` arguments. The internal browser uses `http://terminal.local:4173/`; it is not a user-facing URL. The supervisor owns the preview lifecycle. The ignored local profile survives the supervisor's cleared process environment.
-
-The portable profile simulates ChatGPT sign-in only for loopback development requests. Visit `/signin-with-chatgpt?return_to=/` to sign in as `local_seedy` (`seedy@sites.test`, display name `Seedy`) and `/signout-with-chatgpt?return_to=/` to sign out. The development cookie preserves that identity across server restarts. Mock auth is disabled in the managed-linux profile and is not included in production builds; hosted authentication remains dispatch-owned.
-
-The Worker uses `vinext/server/fetch-handler`, including Vinext's config-aware image handling. After building, `npm start` runs that Worker locally through Wrangler on `127.0.0.1`, sharing `.wrangler/state` with dev preview and local D1 migrations; it does not deploy the site or simulate sign-in. Use the URL printed by the server. Pass `npm start -- --port <port>` to select a different built-preview port.
-
-Local previews use Miniflare's placeholder `Request.cf` metadata without a network lookup. Set `CLOUDFLARE_CF_FETCH_ENABLED=true` to opt into fetching preview metadata; this setting does not change hosted request metadata.
-
-Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
-
-## Included Shape
-
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `@cloudflare/workers-types` provides Worker types; `cloudflare-env.d.ts` declares optional `DB`/`BUCKET` bindings—update these declarations if binding names change
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Use it as the durable user key; use email and name for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+node --version
+npm --version
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+If Node.js is older than `22.13.0`, install a current Node.js 22 release from [nodejs.org](https://nodejs.org/) or switch to Node 22 with your preferred Node version manager.
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs optional or required ChatGPT sign-in:
+## Run the app locally
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use the returned `userId` as the stable user key for user-owned records; do not use email as a durable identifier.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send anonymous visitors through Sign in with ChatGPT.
-- In a Server Component, start sign-in with `<a href={chatGPTSignInPath(returnTo)} target="_top">`. The auth helper module is server-only; do not import it into a Client Component.
-- Do not use `fetch`, XHR, a client-side router, or a framework link that can prefetch the sign-in route. SIWC must start as a top-level navigation.
-- Never request the AuthAPI authorization endpoint directly. The dispatch-owned `/signin-with-chatgpt` route must start the SIWC flow.
-- Use `chatGPTSignOutPath(returnTo)` for browser sign-out links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because they depend on per-request identity headers.
+### 1. Get the source code
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection. Do not implement app routes for those reserved paths. Routes that do not import and call the helper remain anonymous-compatible.
+For a new checkout, clone the GitHub repository:
 
-SIWC establishes identity only; it does not prove workspace membership. Use the Sites hosting platform's access policy controls for workspace-wide restrictions, or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Local D1 migrations
-
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
-
-```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
+```bash
+git clone https://github.com/cattuscrew/character-brief-studio.git
+cd character-brief-studio
 ```
 
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+If you already have this folder, just change into it:
 
-## Diagnostic Commands
+```bash
+cd /Users/andrewle/Documents/Workspace/dungeon-train-visdev
+```
 
-- `npm run install:ci`: perform the one locked dependency install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: preview the built Worker locally with D1/R2 support
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+### 2. Install dependencies
 
-When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
+Run the locked install used by this project:
 
-The portable build runs Vinext directly without a host `timeout` command. The managed-linux build uses `scripts/build-verified.sh` and its existing `SITES_BUILD_TIMEOUT` setting.
+```bash
+npm run install:ci
+```
 
-## Learn More
+If the install reports an unsupported Node.js version, upgrade Node.js and run the command again.
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+### 3. Start the development server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser. The page updates as you edit the source. Keep the terminal running while you work.
+
+Stop the server with `Ctrl+C`.
+
+### Share a temporary local URL (optional)
+
+If your friend is on the same Wi-Fi network, you can let them view your running development server:
+
+```bash
+npm run dev -- --hostname 0.0.0.0
+```
+
+Find your computer's local IP address in its network settings, then have your friend open `http://YOUR_LOCAL_IP:5173`. This works only while the server is running and both computers are on the same network. It is not a public internet URL, and it does not share browser-stored recipes or images.
+
+### 4. Preview a production build (optional)
+
+Build the static site:
+
+```bash
+npm run build
+```
+
+The deployable static files are written to `dist/client`. To run the built app locally:
+
+```bash
+npm run start
+```
+
+Use the local URL printed by the command. Stop it with `Ctrl+C`.
+
+## Where to edit
+
+- `app/page.tsx` — the main editor layout and interactions
+- `app/globals.css` — global visual styling and responsive layout
+- `lib/brief-studio.ts` — field definitions, choices, conflict rules, and deterministic brief/prompt composition
+- `lib/recipe-storage.ts` — browser storage, recipe library, and ZIP import/export
+- `public/` — static assets such as the favicon
+
+Keep generated folders such as `node_modules`, `dist`, `.next`, `.vinext`, and `.wrangler` out of commits unless a deployment workflow explicitly requires them.
+
+## Recommended Git workflow
+
+Create a branch for each change:
+
+```bash
+git switch -c your-name/short-description
+```
+
+After editing and testing:
+
+```bash
+git add .
+git commit -m "Describe the change"
+git push -u github your-name/short-description
+```
+
+Open a pull request on GitHub so the change can be reviewed before it is merged into `main`.
+
+Before starting new work, update your local branch:
+
+```bash
+git switch main
+git pull --rebase github main
+```
+
+This checkout calls the GitHub remote `github`. A fresh clone normally calls its remote `origin`; use that name instead when working from a fresh clone.
+
+## Hosted URL
+
+The local address [http://localhost:5173](http://localhost:5173) works only on the computer running the development server. GitHub stores the source code; it does not automatically make the app available at a public URL.
+
+The current Sites deployment is available at:
+
+[Character Brief Studio](https://character-brief-studio.outpost-rills6xbiryi.chatgpt.site)
+
+For a URL that automatically rebuilds when `main` changes, connect the GitHub repository to a static host such as Cloudflare Pages. Use these build settings:
+
+- Production branch: `main`
+- Build command: `npm run build`
+- Build output directory: `dist/client`
+- Node.js version: `22.13.0` or newer
+
+## Useful commands
+
+```bash
+npm run dev       # start the local development server
+npm run build     # create the deployable static build
+npm run start     # preview the built app locally
+npm run lint      # check source files for lint errors
+```
