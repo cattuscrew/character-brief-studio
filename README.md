@@ -1,151 +1,87 @@
 # Character Brief Studio
 
-Character Brief Studio is a browser-based, field-first prompt builder for game character and creature artwork. It helps a non-artist choose clear options for each part of an `$imagegen` request and produces a readable brief and copy-ready prompt.
+A simple browser tool for building clear `$imagegen` prompts for game characters and creatures.
 
-The app is deterministic and client-side. It does not call an AI model or an image-generation API.
+The app runs in your browser. It does not use AI or upload your recipes and reference images.
 
-## What is stored
+## Run it on your computer
 
-- Recipes and reference images are stored locally in the browser using IndexedDB.
-- They are not shared automatically between computers or browsers.
-- Use the app's Export and Import actions to move a recipe and its reference images between devices.
-- Nothing is uploaded by the app unless you explicitly export a ZIP or publish the site.
+### First time only
 
-## Requirements
+1. Install [Node.js 22](https://nodejs.org/).
 
-- Node.js `22.13.0` or newer
-- npm (included with Node.js)
-- Git, if you are downloading or synchronizing the source from GitHub
-
-Check your versions:
-
-```bash
-node --version
-npm --version
-```
-
-If Node.js is older than `22.13.0`, install a current Node.js 22 release from [nodejs.org](https://nodejs.org/) or switch to Node 22 with your preferred Node version manager.
-
-## Run the app locally
-
-### 1. Get the source code
-
-For a new checkout, clone the GitHub repository:
+2. Download the project:
 
 ```bash
 git clone https://github.com/cattuscrew/character-brief-studio.git
 cd character-brief-studio
 ```
 
-If you already have this folder, just change into it:
-
-```bash
-cd /Users/andrewle/Documents/Workspace/dungeon-train-visdev
-```
-
-### 2. Install dependencies
-
-Run the locked install used by this project:
+3. Install the project files:
 
 ```bash
 npm run install:ci
 ```
 
-If the install reports an unsupported Node.js version, upgrade Node.js and run the command again.
+### Every time you want to use it
 
-### 3. Start the development server
+Open Terminal in the project folder and run:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser. The page updates as you edit the source. Keep the terminal running while you work.
+Open this address in your browser:
 
-Stop the server with `Ctrl+C`.
+[http://localhost:5173](http://localhost:5173)
 
-### Share a temporary local URL (optional)
+Keep the terminal open while you use the app. Press `Ctrl+C` in the terminal to stop it.
 
-If your friend is on the same Wi-Fi network, you can let them view your running development server:
+## Make a change
 
-```bash
-npm run dev -- --hostname 0.0.0.0
-```
+Open the project folder in a code editor such as VS Code.
 
-Find your computer's local IP address in its network settings, then have your friend open `http://YOUR_LOCAL_IP:5173`. This works only while the server is running and both computers are on the same network. It is not a public internet URL, and it does not share browser-stored recipes or images.
+Common files:
 
-### 4. Preview a production build (optional)
+- `app/page.tsx` — what the app does and what appears on screen
+- `app/globals.css` — colors, spacing, and layout
+- `lib/brief-studio.ts` — choices and prompt wording
+- `lib/recipe-storage.ts` — saving, loading, and ZIP files
 
-Build the static site:
+Save your file, then refresh the browser if it does not update automatically.
 
-```bash
-npm run build
-```
+## Keep your copy up to date
 
-The deployable static files are written to `dist/client`. To run the built app locally:
-
-```bash
-npm run start
-```
-
-Use the local URL printed by the command. Stop it with `Ctrl+C`.
-
-## Where to edit
-
-- `app/page.tsx` — the main editor layout and interactions
-- `app/globals.css` — global visual styling and responsive layout
-- `lib/brief-studio.ts` — field definitions, choices, conflict rules, and deterministic brief/prompt composition
-- `lib/recipe-storage.ts` — browser storage, recipe library, and ZIP import/export
-- `public/` — static assets such as the favicon
-
-Keep generated folders such as `node_modules`, `dist`, `.next`, `.vinext`, and `.wrangler` out of commits unless a deployment workflow explicitly requires them.
-
-## Recommended Git workflow
-
-Create a branch for each change:
+Before you start editing:
 
 ```bash
-git switch -c your-name/short-description
-```
-
-After editing and testing:
-
-```bash
-git add .
-git commit -m "Describe the change"
-git push -u github your-name/short-description
-```
-
-Open a pull request on GitHub so the change can be reviewed before it is merged into `main`.
-
-Before starting new work, update your local branch:
-
-```bash
-git switch main
 git pull --rebase github main
 ```
 
-This checkout calls the GitHub remote `github`. A fresh clone normally calls its remote `origin`; use that name instead when working from a fresh clone.
-
-## Hosted URL
-
-The local address [http://localhost:5173](http://localhost:5173) works only on the computer running the development server. GitHub stores the source code; it does not automatically make the app available at a public URL.
-
-The current Sites deployment is available at:
-
-[Character Brief Studio](https://character-brief-studio.outpost-rills6xbiryi.chatgpt.site)
-
-For a URL that automatically rebuilds when `main` changes, connect the GitHub repository to a static host such as Cloudflare Pages. Use these build settings:
-
-- Production branch: `main`
-- Build command: `npm run build`
-- Build output directory: `dist/client`
-- Node.js version: `22.13.0` or newer
-
-## Useful commands
+After you finish editing:
 
 ```bash
-npm run dev       # start the local development server
-npm run build     # create the deployable static build
-npm run start     # preview the built app locally
-npm run lint      # check source files for lint errors
+git add .
+git commit -m "Describe what you changed"
+git push github main
 ```
+
+Your friend can then update their copy with the same `git pull` command.
+
+If Git says the remote is called `origin`, use `origin` instead of `github`.
+
+## Important to know
+
+- `localhost` works only on the computer running the app. Your friend should run their own local copy.
+- Recipes and reference images are saved in each browser separately. They are not shared automatically. Use Export and Import in the app to move them.
+- The current hosted version is available at [Character Brief Studio](https://character-brief-studio.outpost-rills6xbiryi.chatgpt.site).
+
+## If something goes wrong
+
+Check your Node.js version:
+
+```bash
+node --version
+```
+
+It must be `22.13.0` or newer. If you still need help, copy the error message from Terminal and share it with your teammate.
